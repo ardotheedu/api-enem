@@ -76,25 +76,7 @@ export class EnemService {
         const alternatives = await this.getAlternatives(question.id);
         const files = await this.getQuestionFiles(question.id);
         
-        return {
-          id: question.id,
-          title: question.title,
-          index: question.index_number,
-          year: question.year,
-          context: question.context,
-          alternativesIntroduction: question.alternatives_introduction,
-          correctAlternative: question.correct_alternative,
-          discipline: question.discipline_label ? {
-            label: question.discipline_label,
-            value: question.discipline_value
-          } : null,
-          language: question.language_label ? {
-            label: question.language_label,
-            value: question.language_value
-          } : null,
-          alternatives,
-          files
-        };
+        return this.createQuestionResponse(question, alternatives, files);
       })
     );
 
@@ -131,25 +113,7 @@ export class EnemService {
     const alternatives = await this.getAlternatives(id);
     const files = await this.getQuestionFiles(id);
 
-    return {
-      id: question.id,
-      title: question.title,
-      index: question.index_number,
-      year: question.year,
-      context: question.context,
-      alternativesIntroduction: question.alternatives_introduction,
-      correctAlternative: question.correct_alternative,
-      discipline: question.discipline_label ? {
-        label: question.discipline_label,
-        value: question.discipline_value
-      } : null,
-      language: question.language_label ? {
-        label: question.language_label,
-        value: question.language_value
-      } : null,
-      alternatives,
-      files
-    };
+    return this.createQuestionResponse(question, alternatives, files);
   }
 
   async getRandomQuestion(filter: FilterDto): Promise<QuestionDto | null> {
@@ -228,7 +192,8 @@ export class EnemService {
     return (alternatives as any[]).map(alt => ({
       letter: alt.letter,
       text: alt.text,
-      filePath: alt.file_path,
+      file: alt.file_path, // Manter compatibilidade com nome original
+      filePath: alt.file_path, // Também disponível com este nome
       isCorrect: alt.is_correct === 1
     }));
   }
@@ -242,6 +207,56 @@ export class EnemService {
 
     const files = await this.runQuery(query, [questionId]);
     return (files as any[]).map(file => file.file_path);
+  }
+
+  private extractImagesFromContext(context: string): string[] {
+    if (!context) return [];
+    
+    // Regex para encontrar imagens no formato ![](path) ou ![alt](path)
+    const imageRegex = /!\[.*?\]\(([^)]+)\)/g;
+    const images: string[] = [];
+    let match;
+
+    while ((match = imageRegex.exec(context)) !== null) {
+      images.push(match[1]);
+    }
+
+    return images;
+  }
+
+  private createQuestionResponse(question: any, alternatives: any[], files: string[]): any {
+    // Extrair imagens do contexto
+    const contextImages = this.extractImagesFromContext(question.context);
+    
+    return {
+      id: question.id,
+      title: question.title,
+      index: question.index_number,
+      year: question.year,
+      context: question.context,
+      alternativesIntroduction: question.alternatives_introduction,
+      correctAlternative: question.correct_alternative,
+      discipline: question.discipline_label ? {
+        label: question.discipline_label,
+        value: question.discipline_value
+      } : null,
+      language: question.language_label ? {
+        label: question.language_label,
+        value: question.language_value
+      } : null,
+      alternatives,
+      files,
+      images: {
+        context: contextImages, // Imagens extraídas do contexto
+        files: files, // Arquivos de imagem da questão
+        alternatives: alternatives
+          .filter(alt => alt.filePath)
+          .map(alt => ({
+            letter: alt.letter,
+            filePath: alt.filePath
+          })) // Imagens das alternativas
+      }
+    };
   }
 
   private runQuery(query: string, params: any[]): Promise<any> {

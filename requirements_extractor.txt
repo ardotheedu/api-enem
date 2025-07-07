@@ -1,9 +1,10 @@
 # Dependências para o script de extração de questões do ENEM
-# Este script usa apenas bibliotecas padrão do Python
-# Não são necessárias dependências externas
+requests>=2.25.0
 
 # Para executar o script:
+# pip install -r requirements_extractor.txt
 # python extract_questions.py
 
 # O script criará um banco de dados SQLite chamado 'enem_questions.db'
 # com todas as questões extraídas da pasta quiz-items
+# As imagens serão baixadas e salvas na pasta 'images'

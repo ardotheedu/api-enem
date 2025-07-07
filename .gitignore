@@ -54,3 +54,15 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Database files
+*.db
+*.sqlite
+
+# Downloaded images
+images/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class

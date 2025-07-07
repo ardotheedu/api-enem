@@ -6,11 +6,26 @@ Scripts Python para extrair questões do ENEM da pasta `quiz-items` e armazená-
 
 - `extract_questions.py` - Script principal para extrair questões e criar o banco de dados
 - `view_questions.py` - Script para consultar e visualizar dados do banco
-- `requirements_extractor.txt` - Informações sobre dependências (não há dependências externas)
+- `requirements_extractor.txt` - Dependências necessárias para o script
+
+## Funcionalidades
+
+### ✨ Novas funcionalidades adicionadas:
+
+- **Download automático de imagens**: O script agora baixa todas as imagens das questões e alternativas
+- **Organização de imagens**: As imagens são salvas na pasta `images/` organizadas por ano
+- **Substituição de URLs**: URLs das imagens no contexto são substituídas pelos caminhos locais
+- **Tratamento de imagens em alternativas**: Imagens das alternativas também são baixadas e organizadas
 
 ## Como usar
 
-### 1. Extraindo questões
+### 1. Instalando dependências
+
+```bash
+pip install -r requirements_extractor.txt
+```
+
+### 2. Extraindo questões
 
 Execute o script principal para extrair todas as questões da pasta `quiz-items`:
 
@@ -20,11 +35,14 @@ python extract_questions.py
 
 O script irá:
 - Criar um banco de dados SQLite chamado `enem_questions.db`
+- Criar a pasta `images/` para armazenar as imagens baixadas
+- Baixar todas as imagens das questões e alternativas automaticamente
+- Organizar as imagens por ano (ex: `images/2023/`)
 - Extrair todas as questões de todos os anos disponíveis
 - Organizar os dados em tabelas relacionais
 - Exibir estatísticas ao final
 
-### 2. Consultando questões
+### 3. Consultando questões
 
 Use o script de visualização para consultar os dados:
 
