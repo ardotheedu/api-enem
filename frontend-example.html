@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API ENEM - Exemplo Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .filter-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group select, .form-group input {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #6c757d;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .question {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .question-context {
+            margin: 15px 0;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .alternatives {
+            margin-top: 20px;
+        }
+
+        .alternative {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .alternative.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alternative:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .pagination-info {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .filter-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 API ENEM</h1>
+            <p>Explore questões do ENEM com filtros avançados</p>
+        </div>
+
+        <div class="controls">
+            <div class="filter-group">
+                <div class="form-group">
+                    <label for="year">Ano</label>
+                    <select id="year">
+                        <option value="">Todos os anos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="discipline">Disciplina</label>
+                    <select id="discipline">
+                        <option value="">Todas as disciplinas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="language">Idioma</label>
+                    <select id="language">
+                        <option value="">Todos os idiomas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="limit">Questões por página</label>
+                    <select id="limit">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="searchQuestions()">🔍 Buscar Questões</button>
+                <button class="btn btn-secondary" onclick="getRandomQuestion()">🎲 Questão Aleatória</button>
+                <button class="btn btn-success" onclick="clearFilters()">🧹 Limpar Filtros</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="stats" class="stats" style="display: none;"></div>
+            <div id="loading" class="loading" style="display: none;">
+                Carregando questões...
+            </div>
+            <div id="error" class="error" style="display: none;"></div>
+            <div id="results"></div>
+            <div id="pagination" class="pagination" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/enem';
+        let currentPage = 1;
+        let currentData = null;
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadMetadata();
+            await searchQuestions();
+        });
+
+        // Carregar metadados
+        async function loadMetadata() {
+            try {
+                const [years, disciplines, languages] = await Promise.all([
+                    fetch(`${API_BASE}/years`).then(r => r.json()),
+                    fetch(`${API_BASE}/disciplines`).then(r => r.json()),
+                    fetch(`${API_BASE}/languages`).then(r => r.json())
+                ]);
+
+                // Populate years
+                const yearSelect = document.getElementById('year');
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                });
+
+                // Populate disciplines
+                const disciplineSelect = document.getElementById('discipline');
+                disciplines.forEach(discipline => {
+                    const option = document.createElement('option');
+                    option.value = discipline.value;
+                    option.textContent = discipline.label;
+                    disciplineSelect.appendChild(option);
+                });
+
+                // Populate languages
+                const languageSelect = document.getElementById('language');
+                languages.forEach(language => {
+                    const option = document.createElement('option');
+                    option.value = language.value;
+                    option.textContent = language.label;
+                    languageSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                showError('Erro ao carregar metadados: ' + error.message);
+            }
+        }
+
+        // Buscar questões
+        async function searchQuestions(page = 1) {
+            const year = document.getElementById('year').value;
+            const discipline = document.getElementById('discipline').value;
+            const language = document.getElementById('language').value;
+            const limit = document.getElementById('limit').value;
+
+            const params = new URLSearchParams();
+            if (year) params.append('year', year);
+            if (discipline) params.append('discipline', discipline);
+            if (language) params.append('language', language);
+            params.append('limit', limit);
+            params.append('page', page);
+
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/questions?${params}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro na requisição');
+                }
+
+                currentData = data;
+                currentPage = page;
+                
+                displayResults(data);
+                updatePagination(data);
+                updateStats(data);
+                
+            } catch (error) {
+                showError('Erro ao buscar questões: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Questão aleatória
+        async function getRandomQuestion() {
+            const year = document.getElementById('year').value;
+            const discipline = document.getElementById('discipline').value;
+            const language = document.getElementById('language').value;
+
+            const params = new URLSearchParams();
+            if (year) params.append('year', year);
+            if (discipline) params.append('discipline', discipline);
+            if (language) params.append('language', language);
+
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/questions/random?${params}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro na requisição');
+                }
+
+                // Simular estrutura de resposta paginada
+                const mockData = {
+                    data: [data],
+                    total: 1,
+                    page: 1,
+                    limit: 1,
+                    totalPages: 1
+                };
+
+                displayResults(mockData);
+                updatePagination(mockData);
+                updateStats(mockData);
+                
+            } catch (error) {
+                showError('Erro ao buscar questão aleatória: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Limpar filtros
+        function clearFilters() {
+            document.getElementById('year').value = '';
+            document.getElementById('discipline').value = '';
+            document.getElementById('language').value = '';
+            document.getElementById('limit').value = '10';
+            currentPage = 1;
+            searchQuestions();
+        }
+
+        // Exibir resultados
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (data.data.length === 0) {
+                resultsDiv.innerHTML = '<p>Nenhuma questão encontrada com os filtros selecionados.</p>';
+                return;
+            }
+
+            const html = data.data.map(question => `
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-title">${question.title}</div>
+                        <div class="question-meta">
+                            <span>📅 ${question.year}</span>
+                            <span>📋 #${question.index}</span>
+                            ${question.discipline ? `<span>📚 ${question.discipline.label}</span>` : ''}
+                            ${question.language ? `<span>🌐 ${question.language.label}</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    ${question.context ? `<div class="question-context">${question.context}</div>` : ''}
+                    
+                    ${question.alternativesIntroduction ? `<div class="question-context"><strong>Alternativas:</strong> ${question.alternativesIntroduction}</div>` : ''}
+                    
+                    <div class="alternatives">
+                        ${question.alternatives.map(alt => `
+                            <div class="alternative ${alt.isCorrect ? 'correct' : ''}">
+                                <strong>${alt.letter})</strong> ${alt.text}
+                                ${alt.isCorrect ? ' ✅' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    ${question.correctAlternative ? `<div style="margin-top: 15px;"><strong>Resposta correta:</strong> ${question.correctAlternative}</div>` : ''}
+                </div>
+            `).join('');
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Atualizar paginação
+        function updatePagination(data) {
+            const paginationDiv = document.getElementById('pagination');
+            
+            if (data.totalPages <= 1) {
+                paginationDiv.style.display = 'none';
+                return;
+            }
+
+            paginationDiv.style.display = 'flex';
+            
+            const html = `
+                <button class="btn btn-secondary" 
+                        onclick="searchQuestions(${data.page - 1})" 
+                        ${data.page === 1 ? 'disabled' : ''}>
+                    ← Anterior
+                </button>
+                <span class="pagination-info">
+                    Página ${data.page} de ${data.totalPages}
+                </span>
+                <button class="btn btn-secondary" 
+                        onclick="searchQuestions(${data.page + 1})" 
+                        ${data.page === data.totalPages ? 'disabled' : ''}>
+                    Próxima →
+                </button>
+            `;
+
+            paginationDiv.innerHTML = html;
+        }
+
+        // Atualizar estatísticas
+        function updateStats(data) {
+            const statsDiv = document.getElementById('stats');
+            statsDiv.style.display = 'grid';
+            
+            const html = `
+                <div class="stat-card">
+                    <div class="stat-value">${data.total}</div>
+                    <div class="stat-label">Total de Questões</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.page}</div>
+                    <div class="stat-label">Página Atual</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.totalPages}</div>
+                    <div class="stat-label">Total de Páginas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.limit}</div>
+                    <div class="stat-label">Por Página</div>
+                </div>
+            `;
+
+            statsDiv.innerHTML = html;
+        }
+
+        // Exibir loading
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('pagination').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+        }
+
+        // Esconder loading
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Exibir erro
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('pagination').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,23 +1,210 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# API ENEM
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+🎯 **API REST para acessar questões do ENEM com filtros avançados**
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
+Esta API permite consultar questões do ENEM (Exame Nacional do Ensino Médio) com diversos filtros, paginação e busca aleatória. Construída com NestJS e SQLite.
+
+## ✨ Funcionalidades
+
+- 📚 **Buscar questões** com filtros por ano, disciplina e idioma
+- 🎲 **Questões aleatórias** com filtros opcionais
+- 📄 **Paginação** para grandes volumes de dados
+- 🗂️ **Listar metadados** disponíveis (anos, disciplinas, idiomas)
+- 🔍 **Buscar questão específica** por ID
+- 🌐 **CORS habilitado** para uso em frontend
+- ✅ **Validação de dados** com class-validator
+
+## 🚀 Instalação e Execução
+
+### Pré-requisitos
+
+- Node.js (versão 18 ou superior)
+- npm ou yarn
+
+### Instalação
+
+```bash
+# Clonar repositório
+git clone <url-do-repositorio>
+cd api-enem
+
+# Instalar dependências
+npm install
+
+# Verificar se o banco de dados existe
+# O arquivo enem_questions.db deve estar na raiz do projeto
+```
+
+### Execução
+
+```bash
+# Modo desenvolvimento
+npm run start:dev
+
+# Modo produção
+npm run build
+npm run start:prod
+```
+
+A API estará disponível em `http://localhost:3000`
+
+## 📋 Endpoints Disponíveis
+
+### Listar Questões
+```http
+GET /enem/questions
+```
+
+**Parâmetros de Query:**
+- `year` (number): Filtrar por ano
+- `discipline` (string): Filtrar por disciplina
+- `language` (string): Filtrar por idioma
+- `page` (number): Página (padrão: 1)
+- `limit` (number): Itens por página (padrão: 10, max: 100)
+
+**Exemplos:**
+```bash
+# Questões de 2023
+curl "http://localhost:3000/enem/questions?year=2023"
+
+# Questões de matemática
+curl "http://localhost:3000/enem/questions?discipline=matematica"
+
+# Questões de inglês com paginação
+curl "http://localhost:3000/enem/questions?language=en&page=2&limit=5"
+```
+
+### Buscar Questão por ID
+```http
+GET /enem/questions/:id
+```
+
+**Exemplo:**
+```bash
+curl "http://localhost:3000/enem/questions/2575"
+```
+
+### Questão Aleatória
+```http
+GET /enem/questions/random
+```
+
+**Parâmetros de Query:**
+- `year` (number): Filtrar por ano
+- `discipline` (string): Filtrar por disciplina
+- `language` (string): Filtrar por idioma
+
+**Exemplos:**
+```bash
+# Questão aleatória
+curl "http://localhost:3000/enem/questions/random"
+
+# Questão aleatória de matemática de 2023
+curl "http://localhost:3000/enem/questions/random?year=2023&discipline=matematica"
+```
+
+### Metadados
+```http
+GET /enem/years          # Lista anos disponíveis
+GET /enem/disciplines    # Lista disciplinas disponíveis
+GET /enem/languages      # Lista idiomas disponíveis
+```
+
+## 📖 Exemplo de Resposta
+
+```json
+{
+  "data": [
+    {
+      "id": 2575,
+      "title": "Questão 1 - ENEM 2023",
+      "index": 1,
+      "year": 2023,
+      "context": "Texto da questão...",
+      "alternativesIntroduction": "Introdução das alternativas...",
+      "correctAlternative": "D",
+      "discipline": {
+        "label": "Linguagens, Códigos e suas Tecnologias",
+        "value": "linguagens-codigos-tecnologias"
+      },
+      "language": {
+        "label": "Português",
+        "value": "pt"
+      },
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Alternativa A",
+          "filePath": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Alternativa D",
+          "filePath": null,
+          "isCorrect": true
+        }
+      ],
+      "files": []
+    }
+  ],
+  "total": 183,
+  "page": 1,
+  "limit": 10,
+  "totalPages": 19
+}
+```
+
+## 🛠️ Tecnologias Utilizadas
+
+- **NestJS** - Framework Node.js
+- **SQLite** - Banco de dados
+- **TypeScript** - Linguagem de programação
+- **class-validator** - Validação de dados
+- **class-transformer** - Transformação de dados
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── enem/
+│   ├── dto/
+│   │   ├── filter.dto.ts      # DTO para filtros
+│   │   └── question.dto.ts    # DTO para questões
+│   ├── enem.controller.ts     # Controlador REST
+│   ├── enem.service.ts        # Lógica de negócio
+│   └── enem.module.ts         # Módulo NestJS
+├── app.module.ts              # Módulo principal
+└── main.ts                    # Arquivo de inicialização
+```
+
+## 🧪 Testando a API
+
+Execute o arquivo de exemplos incluído:
+
+```bash
+node api-examples.js
+```
+
+## 📝 Documentação Completa
+
+Consulte o arquivo `API_DOCUMENTATION.md` para documentação detalhada de todos os endpoints.
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+---
+
+**Desenvolvido com ❤️ para facilitar o acesso às questões do ENEM**
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
